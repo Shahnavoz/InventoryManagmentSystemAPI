@@ -1,4 +1,4 @@
-namespace MiniLibraryAPI.Responses;
+
 
 public class ResponseGetList<T>
 {

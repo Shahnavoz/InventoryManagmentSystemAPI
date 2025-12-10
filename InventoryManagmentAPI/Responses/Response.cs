@@ -1,6 +1,5 @@
 using System.Net;
 
-namespace MiniLibraryAPI.Responses;
 
 public class Response<T>
 {

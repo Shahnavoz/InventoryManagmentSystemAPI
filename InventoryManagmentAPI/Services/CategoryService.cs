@@ -5,7 +5,6 @@ using InventoryManagmentAPI.DTOs.Filters;
 using InventoryManagmentAPI.Entities;
 using InventoryManagmentAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using MiniLibraryAPI.Responses;
 
 namespace InventoryManagmentAPI.Services;
 
@@ -46,23 +45,38 @@ public class CategoryService(ApplicationDbContext context,IMapper mapper):ICateg
        );
     }
 
-    public Task<Response<Category>> GetById(long categoryId)
+    public async Task<Response<Category>> GetById(long categoryId)
     {
-        throw new NotImplementedException();
+        var category=await context.Categories.FirstOrDefaultAsync(x => x.Id == categoryId);
+        return category == null ? new Response<Category>(HttpStatusCode.InternalServerError,"Server Error!")
+                : new Response<Category>(HttpStatusCode.OK, "Success!", category);
+
     }
 
-    public Task<Response<string>> CreateCategory(AddCategoryDto category)
+    public async Task<Response<Category>> CreateCategory(AddCategoryDto categoryDto)
     {
-        throw new NotImplementedException();
+        var category=mapper.Map<Category>(categoryDto);
+        context.Categories.Add(category);
+        await context.SaveChangesAsync();
+        return category ==null  ? new Response<Category>(HttpStatusCode.InternalServerError, "Server Error!")
+                :new Response<Category>(HttpStatusCode.OK, "Success!",category);
     }
 
-    public Task<Response<string>> UpdateCategory(Category category)
+    public async Task<Response<string>> UpdateCategory(UpdateCategoryDto categoryDto)
     {
-        throw new NotImplementedException();
+        var category=await GetById(categoryDto.CategoryId);
+        if(category == null) return new Response<string>(HttpStatusCode.InternalServerError, "Server Error!");
+        category.Data.Name = categoryDto.Name;
+        context.Entry(category).CurrentValues.SetValues(categoryDto);
+        await context.SaveChangesAsync();
+        return category ==null? new Response<string>(HttpStatusCode.InternalServerError, "Server Error!")
+            :new Response<string>(HttpStatusCode.OK, "Success!");
     }
 
-    public Task<Response<string>> DeleteCategory(long categoryId)
+    public async Task<Response<string>> DeleteCategory(long categoryId)
     {
-        throw new NotImplementedException();
+        var category = context.Categories.Where(c => c.Id == categoryId).ExecuteDeleteAsync();
+        return category==null? new Response<string>(HttpStatusCode.InternalServerError, "Server Error!")
+            :new Response<string>(HttpStatusCode.OK, "Success!");
     }
 }
